@@ -1,0 +1,47 @@
+#lang racket
+
+(require rackunit "pe.rkt")
+
+;; simple partial evaluation (removing unecessary if statements, arthmetic ops etc)
+(check-equal? (partial-eval '(linklet () () 5)) '(linklet () () 5))
+(check-equal? (partial-eval '(linklet () () (add1 5))) '(linklet () () 6))
+(check-equal? (partial-eval '(linklet () () (+ 5 10 4))) '(linklet () () 19))
+(check-equal? (partial-eval '(linklet () () (- 5 10))) '(linklet () () -5))
+(check-equal? (partial-eval '(linklet () () (- x 10))) '(linklet () () (- x 10)))
+(check-equal? (partial-eval '(linklet () () (if #t 4 5))) '(linklet () () 4))
+(check-equal? (partial-eval '(linklet () () (if #f 4 5))) '(linklet () () 5))
+(check-equal? (partial-eval '(linklet () () (if (zero? 0) 4 5))) '(linklet () () 4))
+(check-equal? (partial-eval '(linklet () () (if (zero? 2) 4 5))) '(linklet () () 5))
+(check-equal? (partial-eval '(linklet () () (if (zero? x) 4 5))) '(linklet () () (if (zero? x) 4 5)))
+(check-equal? (partial-eval '(linklet () () (string-append "hello " "world"))) '(linklet () () "hello world"))
+(check-equal? (partial-eval '(linklet () () (string-append "hello " x))) '(linklet () () (string-append "hello " x)))
+
+;; VERY simple function application
+(check-equal? (partial-eval '(linklet () () (define-values (add2) (lambda (x) (+ x 2))) (add2 3)))
+              '(linklet () () (define-values (add2) (lambda (x) (+ x 2))) 5))
+(check-equal? (partial-eval '(linklet () () (define-values (fact) (lambda (x) (if (zero? x) 1 (* x (fact (sub1 x)))))) (fact 5)))
+              '(linklet () () (define-values (fact) (lambda (x) (if (zero? x) 1 (* x (fact (sub1 x)))))) 120))
+(check-equal? (partial-eval '(linklet () ()
+                               (define-values (even?) (lambda (x) (if (zero? x) #t (odd? (sub1 x)))))
+                               (define-values (odd?)  (lambda (x) (if (zero? x) #f (even? (sub1 x)))))
+                              (even? 5)))
+              '(linklet () ()
+                        (define-values (even?) (lambda (x) (if (zero? x) #t (odd? (sub1 x)))))
+                        (define-values (odd?)  (lambda (x) (if (zero? x) #f (if (zero? (sub1 x)) #t (odd? (sub1 (sub1 x)))))))
+                #f))
+(check-equal? (partial-eval '(linklet () () (define-values (add) (lambda (x y) (+ x y)))
+                              (add 2 3)))
+              '(linklet () ()
+                        (define-values (add) (lambda (x y) (+ x y))) 5))
+(check-equal? (partial-eval '(linklet () () (define-values (exp) (lambda (x y) (if (zero? y) 1 (* x (exp x (sub1 y))))))
+                              (exp 2 3)))
+              '(linklet () ()
+                        (define-values (exp) (lambda (x y) (if (zero? y) 1 (* x (exp x (sub1 y)))))) 8))
+
+(check-equal? (partial-eval '(linklet () () (define-values (exp) (lambda (x y) (if (zero? y) 1 (* x (exp x (sub1 y))))))
+                              (exp x 3)))
+              '(linklet () ()
+                        (define-values (exp) (lambda (x y) (if (zero? y) 1 (* x (exp x (sub1 y)))))) (* x (* x (* x 1)))))
+
+(define linklet
+  (read (open-input-file "tmp.linklet")))

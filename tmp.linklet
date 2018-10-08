@@ -1,0 +1,110 @@
+;; This is not the original source code. Instead, this is the code after
+;; fully expanding and flattening into a single linklet.
+(linklet
+ ()
+ ()
+ (define-values
+  (prop:procedure-accessor procedure-accessor? procedure-accessor-ref)
+  (make-struct-type-property
+   'procedure
+   (lambda (v_0 info-l_0) (if (exact-integer? v_0) (make-struct-field-accessor (list-ref info-l_0 3) v_0) #f))))
+ (define-values
+  (new-prop:procedure new-procedure? new-procedure-ref)
+  (make-struct-type-property
+   'procedure
+   #f
+   (list (cons prop:procedure values) (cons prop:procedure-accessor values))
+   #t))
+ (define-values (print-values) (lambda vs_0 (begin (begin (for-each (current-print) vs_0) (apply values vs_0)))))
+ (define-values
+  (prop:stream stream-via-prop? stream-ref)
+  (make-struct-type-property
+   'stream
+   (lambda (v_1 si_0)
+     (begin
+       (if (if (vector? v_1)
+             (if (= 3 (vector-length v_1))
+               (if (procedure? (vector-ref v_1 0))
+                 (if (procedure-arity-includes? (vector-ref v_1 0) 1)
+                   (if (procedure? (vector-ref v_1 1))
+                     (if (procedure-arity-includes? (vector-ref v_1 1) 1)
+                       (if (procedure? (vector-ref v_1 2)) (procedure-arity-includes? (vector-ref v_1 2) 1) #f)
+                       #f)
+                     #f)
+                   #f)
+                 #f)
+               #f)
+             #f)
+         (void)
+         (let-values ()
+           (raise-argument-error
+            'guard-for-prop:stream
+            (string-append
+             "(vector/c (procedure-arity-includes/c 1)\n"
+             "          (procedure-arity-includes/c 1)\n"
+             "          (procedure-arity-includes/c 1))")
+            v_1)))
+       (vector->immutable-vector v_1)))))
+ (define-values
+  (prop:gen-sequence sequence-via-prop? sequence-ref)
+  (make-struct-type-property
+   'sequence
+   (lambda (v_2 si_1)
+     (begin
+       (if (if (procedure? v_2) (procedure-arity-includes? v_2 1) #f)
+         (void)
+         (let-values () (raise-argument-error 'guard-for-prop:sequence "(procedure-arity-includes/c 1)" v_2)))
+       v_2))))
+ (define-values
+  (struct:range make-range range? range-ref range-set!)
+  (make-struct-type
+   'stream
+   #f
+   3
+   0
+   #f
+   (list
+    (cons
+     prop:stream
+     (vector
+      (lambda (v_3) (let-values (((cont?_0) (range-ref v_3 2))) (if cont?_0 (not (cont?_0 (range-ref v_3 0))) #f)))
+      (lambda (v_4) (range-ref v_4 0))
+      (lambda (v_5) (make-range ((range-ref v_5 1) (range-ref v_5 0)) (range-ref v_5 1) (range-ref v_5 2)))))
+    (cons
+     prop:gen-sequence
+     (lambda (v_6) (values values #f (range-ref v_6 1) (range-ref v_6 0) (range-ref v_6 2) #f #f))))))
+ (define-values
+  (struct:list-stream make-list-stream list-stream? list-stream-ref list-stream-set!)
+  (make-struct-type
+   'stream
+   #f
+   1
+   0
+   #f
+   (list
+    (cons
+     prop:stream
+     (vector
+      (lambda (v_7) (not (pair? (list-stream-ref v_7 0))))
+      (lambda (v_8) (car (list-stream-ref v_8 0)))
+      (lambda (v_9) (make-list-stream (cdr (list-stream-ref v_9 0))))))
+    (cons prop:gen-sequence (lambda (v_10) (values car cdr values (list-stream-ref v_10 0) pair? #f #f))))))
+ (define-values
+  (struct:do-stream make-do-stream do-stream? do-stream-ref do-stream-set!)
+  (make-struct-type
+   'stream
+   #f
+   3
+   0
+   #f
+   (list
+    (cons
+     prop:stream
+     (vector
+      (lambda (v_11) ((do-stream-ref v_11 0)))
+      (lambda (v_12) ((do-stream-ref v_12 1)))
+      (lambda (v_13) ((do-stream-ref v_13 2))))))))
+ (define-values (empty-stream) (make-do-stream (lambda () #t) void void))
+ (define-values (no-empty-edge-table) (make-hash))
+ (define-values (!) (lambda (n_0) (begin (if (< n_0 2) 1 (* n_0 (! (sub1 n_0)))))))
+ (call-with-values (lambda () (! 20)) print-values))
