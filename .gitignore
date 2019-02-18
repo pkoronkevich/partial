@@ -1,3 +1,4 @@
 # ignore emacs autosave files
 *~
 /compiled
+/tests/compiled

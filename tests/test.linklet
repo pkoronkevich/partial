@@ -3,13 +3,6 @@
 (linklet
  ()
  ()
- (define-values (for-each*)
-   (lambda (f l)
-     (if (null? l) (void)
-         (begin (f (car l))
-                (for-each* f (cdr l))))))
- 
-                   
  (define-values
   (prop:procedure-accessor procedure-accessor? procedure-accessor-ref)
   (make-struct-type-property
@@ -113,5 +106,6 @@
       (lambda (v_13) ((do-stream-ref v_13 2))))))))
  (define-values (empty-stream) (make-do-stream (lambda () #t) void void))
  (define-values (no-empty-edge-table) (make-hash))
- (define-values (!) (lambda (n_0) (begin (if (< n_0 2) 1 (* n_0 (! (sub1 n_0)))))))
- (call-with-values (lambda () (! 20)) print-values))
+ (define-values (x) 15)
+ (define-values (!) (lambda (n_0) (begin (if (zero? n_0) 1 (* n_0 (! (- n_0 1)))))))
+ (call-with-values (lambda () (! x)) print-values))
